@@ -11,153 +11,155 @@ import ResultScreen from './ResultScreen'
 
 const QUESTIONNAIRE = [
   {
-    section: 'Personal Information',
+    section: 'Informacje osobiste',
     items: [
       {
-        id: 'gender',
+        id: 'Plec',
         type: 'choice',
-        label: 'What is your gender?',
-        options: ['Male', 'Female', 'Other'],
+        label: 'Jaka jest Twoja płeć?',
+        options: ['Mężczyzna', 'Kobieta', 'Inna'],
       },
       {
-        id: 'hometown',
+        id: 'Pochodzenie',
         type: 'choice',
-        label: 'How would you classify your hometown based on its size/urbanization?',
-        options: ['Village', 'Town', 'City', 'Other'],
+        label: 'Jak sklasyfikowałbyś/-aś swoje miejsce pochodzenia?',
+        options: ['Wieś', 'Małe miasto', 'Miasto', 'Inne'],
       },
     ],
   },
   {
-    section: 'Previous Academic Performance',
+    section: 'Wyniki z egzaminów',
     items: [
       {
-        id: 'hsc_score',
+        id: 'Matura',
         type: 'number',
-        label: 'What was your HSC GPA or percentage?',
-        placeholder: 'e.g. 4.17',
+        label: 'Jaki wynik uzyskałeś/-aś z matury? (w procentach)',
+        placeholder: 'np. 85',
         min: 0,
-        max: 5,
-        step: 0.01,
-        helper: 'Enter a numeric value (e.g., 3.81).',
+        max: 100,
+        step: 1,
+        helper: 'Podaj wartość w procentach (0-100).',
       },
       {
-        id: 'ssc_score',
+        id: 'Egzamin8',
         type: 'number',
-        label: 'What was your SSC GPA or percentage?',
-        placeholder: 'e.g. 3.81',
+        label: 'Jaki wynik uzyskałeś/-aś z egzaminu ósmoklasisty? (w procentach)',
+        placeholder: 'np. 78',
         min: 0,
-        max: 5,
-        step: 0.01,
-        helper: 'Enter a numeric value (e.g., 4.25).',
+        max: 100,
+        step: 1,
+        helper: 'Podaj wartość w procentach (0-100).',
       },
     ],
   },
   {
-    section: 'Family & Socioeconomic Background',
+    section: 'Tło rodzinne i ekonomiczne',
     items: [
       {
-        id: 'income',
+        id: 'Dochody',
         type: 'choice',
-        label: 'What is your family income level?',
+        label: 'Jaki jest miesięczny dochód Twojej rodziny?',
         options: [
-          'Low (Below 15,000)',
-          'Lower middle (15,000–30,000)',
-          'Upper middle (30,000–50,000)',
-          'High (Above 50,000)',
+          'Niskie (poniżej 3000 PLN)',
+          'Niżej średnie (3000-6000 PLN)',
+          'Wyżej średnie (6000-10000 PLN)',
+          'Wysokie (powyżej 10000 PLN)',
         ],
       },
     ],
   },
   {
-    section: 'Technology Access',
+    section: 'Umiejętności komputerowe',
     items: [
       {
-        id: 'computer_proficiency',
+        id: 'Komputer',
         type: 'scale',
-        label: 'What is your proficiency level in computer usage?',
-        minLabel: '1 = Low',
-        maxLabel: '5 = High',
+        label: 'Oceń swój poziom umiejętności komputerowych.',
+        minLabel: '1 = Niski',
+        maxLabel: '5 = Wysoki',
       },
     ],
   },
   {
-    section: 'Study & Preparation Habits',
+    section: 'Nawyki nauki i przygotowania',
     items: [
       {
-        id: 'preparation_time',
+        id: 'Przygotowanie',
         type: 'choice',
-        label: 'How many hours per week do you spend preparing/studying for your courses?',
-        options: ['0–1 Hour', '1–3 Hours', 'More than 3 Hours'],
+        label: 'Ile godzin dziennie poświęcasz na naukę i przygotowanie do zajęć?',
+        options: ['0-1 godzina', '1-2 godziny', '2-3 godziny', 'Więcej niż 3 godziny'],
       },
       {
-        id: 'gaming_time',
+        id: 'Gry',
         type: 'choice',
-        label: 'How many hours per week do you spend playing video games?',
-        options: ['0–1 Hour', '1–3 Hours', 'More than 3 Hours'],
+        label: 'Ile godzin dziennie poświęcasz na granie w gry komputerowe?',
+        options: ['0-1 godzina', '1-3 godziny', 'Więcej niż 3 godziny'],
       },
     ],
   },
   {
-    section: 'Class Engagement',
+    section: 'Zaangażowanie w zajęcia',
     items: [
       {
-        id: 'attendance',
+        id: 'Frekwencja',
         type: 'choice',
-        label: 'What is your class attendance rate?',
-        options: ['0–50%', '50–80%', '80–100%'],
+        label: 'Jaka jest Twoja frekwencja na zajęciach?',
+        options: ['0-50%', '50-80%', '80-100%'],
       },
       {
-        id: 'extracurricular',
+        id: 'Dodatkowe',
         type: 'choice',
-        label: 'Do you participate in extracurricular activities?',
-        options: ['Yes', 'No'],
+        label: 'Czy uczestniczysz w zajęciach dodatkowych/pozalekcyjnych?',
+        options: ['Tak', 'Nie'],
       },
     ],
   },
   {
-    section: 'Work & Language Skills',
+    section: 'Praca i umiejętności językowe',
     items: [
       {
-        id: 'job',
+        id: 'Praca',
         type: 'choice',
-        label: 'Do you currently have a job or paid employment?',
-        options: ['Yes', 'No'],
+        label: 'Czy obecnie masz płatną pracę?',
+        options: ['Tak', 'Nie'],
       },
       {
-        id: 'english_proficiency',
+        id: 'Angielski',
         type: 'scale',
-        label: 'Rate your English language skills on a scale of 1–5.',
-        minLabel: '1 = Poor',
-        maxLabel: '5 = Excellent',
+        label: 'Oceń swój poziom znajomości języka angielskiego.',
+        minLabel: '1 = Słaby',
+        maxLabel: '5 = Doskonały',
       },
     ],
   },
   {
-    section: 'Course Information',
+    section: 'Informacje o studiach',
     items: [
       {
-        id: 'semester',
+        id: 'Semestr',
         type: 'choice',
-        label: 'Which semester are you currently in?',
-        options: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', 'Other'],
+        label: 'Na którym semestrze obecnie studiujesz?',
+        options: ['1', '2', '3', '4', '5', '6', '7', '8', 'Inny'],
       },
       {
-        id: 'last_sem_gpa',
+        id: 'Ostatnia',
         type: 'number',
-        label: 'What was your GPA point for the last semester?',
-        placeholder: 'e.g. 4.17',
-        min: 0,
+        label: 'Jaka była Twoja średnia ocen z ostatniego semestru?',
+        placeholder: 'np. 4.5',
+        min: 2,
         max: 5,
-        step: 0.01,
+        step: 0.1,
+        helper: 'Podaj wartość w skali 2.0-5.0.',
       },
       {
-        id: 'overall_gpa',
+        id: 'Srednia',
         type: 'number',
-        label: 'What is your overall GPA point until now?',
-        placeholder: 'e.g. 3.81',
-        min: 0,
+        label: 'Jaka jest Twoja ogólna średnia ocen ze studiów?',
+        placeholder: 'np. 4.2',
+        min: 2,
         max: 5,
-        step: 0.01,
+        step: 0.1,
+        helper: 'Podaj wartość w skali 2.0-5.0.',
       },
     ],
   },
@@ -168,8 +170,8 @@ const FLAT_QUESTIONS = QUESTIONNAIRE.flatMap((sec) =>
   sec.items.map((q) => ({ ...q, section: sec.section }))
 )
 
-// <-- dopasuj jak masz inaczej
-const API_URL = 'http://127.0.0.1:8000/api/evaluate'
+// <-- dopasuj URL do swojego API modelu
+const API_URL = 'http://localhost:5001/predict'
 
 // helper: zamienia "4,17" -> 4.17
 const toFloat = (val) => {
@@ -225,28 +227,22 @@ function Questionnaire() {
   }
 
   const buildPayload = (a) => ({
-    department: a.department ?? null,
-    gender: a.gender ?? null,
-    hometown: a.hometown ?? null,
-    income: a.income ?? null,
-
-    computer_proficiency: a.computer_proficiency ? Number(a.computer_proficiency) : null,
-
-    preparation_time: a.preparation_time ?? null,
-    gaming_time: a.gaming_time ?? null,
-
-    attendance: a.attendance ?? null,
-    extracurricular: a.extracurricular ?? null,
-
-    job: a.job ?? null,
-    english_proficiency: a.english_proficiency ? Number(a.english_proficiency) : null,
-
-    semester: a.semester ?? null,
-
-    hsc_score: toFloat(a.hsc_score),
-    ssc_score: toFloat(a.ssc_score),
-    last_sem_gpa: toFloat(a.last_sem_gpa),
-    overall_gpa: toFloat(a.overall_gpa),
+    // Format zgodny z polish_adapter.py
+    Plec: a.Plec ?? null,
+    Pochodzenie: a.Pochodzenie ?? null,
+    Dochody: a.Dochody ?? null,
+    Komputer: a.Komputer ? Number(a.Komputer) : null,
+    Przygotowanie: a.Przygotowanie ?? null,
+    Gry: a.Gry ?? null,
+    Frekwencja: a.Frekwencja ?? null,
+    Dodatkowe: a.Dodatkowe ?? null,
+    Praca: a.Praca ?? null,
+    Angielski: a.Angielski ? Number(a.Angielski) : null,
+    Semestr: a.Semestr ?? null,
+    Matura: toFloat(a.Matura),
+    Egzamin8: toFloat(a.Egzamin8),
+    Ostatnia: toFloat(a.Ostatnia),
+    Srednia: toFloat(a.Srednia),
   })
 
   const handleNext = async () => {
@@ -268,19 +264,19 @@ function Questionnaire() {
         })
 
         if (!resp.ok) {
-  const errJson = await resp.json().catch(() => null)
-  console.error('422 details:', errJson)
-  throw new Error(
-    errJson?.detail ? JSON.stringify(errJson.detail) : `Backend error: ${resp.status}`
-  )
-}
+          const errJson = await resp.json().catch(() => null)
+          console.error('Błąd API:', errJson)
+          throw new Error(
+            errJson?.detail ? JSON.stringify(errJson.detail) : `Błąd backendu: ${resp.status}`
+          )
+        }
 
         const data = await resp.json()
         setResult(data)
         setFinished(true)
       } catch (e) {
         console.error(e)
-        setError('Could not calculate your result. Please try again.')
+        setError('Nie udało się obliczyć wyniku. Spróbuj ponownie.')
       } finally {
         setSubmitting(false)
       }
@@ -303,12 +299,12 @@ function Questionnaire() {
       <div className="questionnaire-shell">
         {!finished ? (
           <>
-            <h1 className="questionnaire-section-title">Self-discipline questionnaire</h1>
+            <h1 className="questionnaire-section-title">Kwestionariusz samodyscypliny</h1>
 
             <div className="questionnaire-header">
               <div>
                 <h2 className="questionnaire-title">
-                  Question {step + 1} of {total}
+                  Pytanie {step + 1} z {total}
                 </h2>
 
                 {showSectionHeader && (
@@ -319,7 +315,7 @@ function Questionnaire() {
               </div>
 
               <button className="btn-ghost small exit-btn" onClick={() => navigate('/')} disabled={submitting}>
-                Exit
+                Wyjdź
               </button>
             </div>
 
@@ -395,11 +391,11 @@ function Questionnaire() {
 
               <div className="question-nav">
                 <button className="btn-ghost small" onClick={handleBack} disabled={step === 0 || submitting}>
-                  ← Back
+                  ← Wstecz
                 </button>
 
                 <button className="btn-primary small next-btn" onClick={handleNext} disabled={!isValidCurrent || submitting}>
-                  {step === total - 1 && submitting ? 'Calculating…' : 'Next →'}
+                  {step === total - 1 && submitting ? 'Obliczanie…' : 'Dalej →'}
                 </button>
               </div>
             </div>

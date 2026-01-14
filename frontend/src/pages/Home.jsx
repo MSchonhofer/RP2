@@ -18,31 +18,31 @@ function Home() {
       {/* karta na środku */}
 <main className="hero">
         <div className="hero-badge">
-          Student Success • Self-discipline & STEM choice
+          Sukces studencki • Samodyscyplina i wybór kierunku
         </div>
 
         <h1 className="hero-title">
-          <span className="highlight">STEM</span> or{' '}
-          <span className="highlight-alt">Non-STEM</span>?
+          <span className="highlight">STEM</span> czy{' '}
+          <span className="highlight-alt">non-STEM</span>?
           <br />
-          Let your habits decide.
+          Niech Twoje nawyki zdecydują.
         </h1>
 
         <p className="hero-subtitle">
-          Answer a short questionnaire about your study habits, gaming, work and
-          background. Based on our research model, we estimate your self-discipline
-          score and how well you fit a STEM vs non-STEM path.
+          Odpowiedz na krótki kwestionariusz dotyczący Twoich nawyków nauki, 
+          grania, pracy i pochodzenia. Na podstawie naszego modelu badawczego 
+          oszacujemy Twój wynik samodyscypliny oraz dopasowanie do kierunku STEM lub non-STEM.
         </p>
 
         {/* główne przyciski */}
         <div className="hero-actions">
           <button className="primary-btn" onClick={handleStart}>
-            Start questionnaire
+            Rozpocznij kwestionariusz
           </button>
 
           <Link to="/self-discipline">
             <button className="ghost-btn">
-              Learn about the research
+              Dowiedz się więcej o badaniu
             </button>
           </Link>
         </div>
@@ -50,13 +50,13 @@ function Home() {
         {/* chipy z dodatkowymi sekcjami */}
         <div className="hero-meta">
           <Link to="/self-discipline" className="meta-chip">
-            Self-discipline index
+            Wskaźnik samodyscypliny
           </Link>
           <Link to="/stem-prediction" className="meta-chip">
-            STEM vs non-STEM prediction
+            Predykcja STEM vs non-STEM
           </Link>
           <Link to="/income-performance" className="meta-chip">
-            Income & performance factors
+            Dochody i czynniki wyników
           </Link>
         </div>
       </main>

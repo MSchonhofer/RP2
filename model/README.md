@@ -40,6 +40,16 @@ Trenuj i porównaj różne modele:
 python train_model.py
 ```
 
+### 3. Predykcja na polskich danych (NOWOŚĆ! 🇵🇱)
+
+Model został wyposażony w adapter automatycznie konwertujący polskie dane na format amerykański:
+
+```bash
+python predict_polish.py
+```
+
+Możesz także używać polskich danych bezpośrednio w API!
+
 Skrypt:
 - Wczytuje dane z `Data_with_STEM.csv`
 - Przetwarza dane (kodowanie kategoryczne, normalizacja)
@@ -58,15 +68,15 @@ Wytrenowane pliki:
 - `model_metadata.pkl` - metadata modelu
 - `feature_importance.png` - wykres ważności cech
 
-### 3. Predykcja
+### 4. Predykcja (amerykańskie dane)
 
-Użyj wytrenowanego modelu do predykcji:
+Użyj wytrenowanego modelu do predykcji na danych amerykańskich:
 
 ```bash
 python predict.py
 ```
 
-#### Przykład użycia w kodzie:
+#### Przykład użycia w kodzie (amerykańskie dane):
 
 ```python
 from predict import STEMPredictor
@@ -100,6 +110,57 @@ if prediction == 1:
 else:
     print(f"Student wybierze non-STEM (prawdopodobieństwo: {1-probability:.2%})")
 ```
+
+#### Przykład użycia w kodzie (POLSKIE dane 🇵🇱):
+
+```python
+from predict_polish import PolishSTEMPredictor
+
+predictor = PolishSTEMPredictor()
+
+# Dane polskiego studenta
+student = {
+    'Plec': 'Mężczyzna',
+    'Matura': 85,              # w procentach
+    'Egzamin8': 75,            # w procentach
+    'Dochody': 'Niżej średnie (3000-6000 PLN)',
+    'Pochodzenie': 'Wieś',
+    'Komputer': 4,
+    'Przygotowanie': '2-3 godziny',
+    'Gry': 'Więcej niż 3 godziny',
+    'Frekwencja': '80%-100%',
+    'Praca': 'Nie',
+    'Angielski': 4,
+    'Dodatkowe': 'Tak',
+    'Semestr': 2,
+    'Ostatnia': 4.5,
+    'Srednia': 4.3
+}
+
+# Predykcja (automatyczna konwersja PL → US)
+prediction, confidence, us_data = predictor.predict(student)
+
+print(f"Student wybierze: {prediction}")
+print(f"Pewność: {confidence:.2f}")
+```
+
+## 🇵🇱 Adapter Polskich Danych
+
+Model został wyposażony w **inteligentny adapter** konwertujący polskie dane na format amerykański!
+
+### Mapowania:
+
+- **Oceny**: Polska (2-5) → USA GPA (1-4.5)
+- **Matura/Egzamin**: 0-100% lub skala 2-5
+- **Dochody**: PLN/miesiąc → USD/rok
+- **Pochodzenie**: Miasto/Wieś → City/Village
+- **Wszystkie inne pola**: Automatyczne tłumaczenie
+
+### Więcej informacji:
+
+- [`polish_adapter.py`](polish_adapter.py) - kod adaptera
+- [`predict_polish.py`](predict_polish.py) - predictor dla polskich danych
+- [`FRONTEND_INTEGRATION.md`](FRONTEND_INTEGRATION.md) - szczegółowa instrukcja dla frontendu
 
 ## Cechy modelu
 
@@ -141,7 +202,7 @@ Model wykorzystuje następujące cechy do predykcji:
 
 ## Integracja ze stroną internetową
 
-### Uruchomienie API serwera
+### Uruchomienie API serwera (z obsługą polskich danych! 🇵🇱)
 
 1. Zainstaluj dodatkowe zależności dla API:
 ```bash
@@ -150,12 +211,20 @@ pip install -r requirements_api.txt
 
 2. Uruchom serwer API:
 ```bash
-python api.py
+python api_polish.py
 ```
 
 Serwer uruchomi się na `http://localhost:5000`
 
+**WAŻNE:** Używaj `api_polish.py` zamiast `api.py` - obsługuje polskie i amerykańskie dane!
+
 ### Endpointy API
+
+#### GET /polish-format
+Zwraca specyfikację formatu polskich danych
+```bash
+curl http://localhost:5000/polish-format
+```
 
 #### GET /health
 Sprawdza czy API działa
@@ -170,28 +239,28 @@ curl http://localhost:5000/model-info
 ```
 
 #### POST /predict
-Wykonuje predykcję na podstawie danych studenta
+Wykonuje predykcję - **automatycznie wykrywa format danych (PL lub US)**
 
-Przykład zapytania:
+Przykład zapytania (POLSKIE dane):
 ```bash
 curl -X POST http://localhost:5000/predict \
   -H "Content-Type: application/json" \
   -d '{
-    "Gender": "Male",
-    "HSC": 4.5,
-    "SSC": 4.75,
-    "Income": "Lower middle (15,000-30,000)",
-    "Hometown": "Village",
-    "Computer": 3,
-    "Preparation": "2-3 Hours",
-    "Gaming": "More than 3 Hours",
-    "Attendance": "80%-100%",
-    "Job": "No",
-    "English": 4,
-    "Extra": "Yes",
-    "Semester": "2nd",
-    "Last": 3.5,
-    "Overall": 3.5
+    "Plec": "Mężczyzna",
+    "Matura": 85,
+    "Egzamin8": 75,
+    "Dochody": "Niżej średnie (3000-6000 PLN)",
+    "Pochodzenie": "Wieś",
+    "Komputer": 4,
+    "Przygotowanie": "2-3 godziny",
+    "Gry": "Więcej niż 3 godziny",
+    "Frekwencja": "80%-100%",
+    "Praca": "Nie",
+    "Angielski": 4,
+    "Dodatkowe": "Tak",
+    "Semestr": 2,
+    "Ostatnia": 4.5,
+    "Srednia": 4.3
   }'
 ```
 
@@ -201,16 +270,20 @@ Przykładowa odpowiedź:
   "prediction": "STEM",
   "prediction_code": 1,
   "model": "SVM",
-  "confidence": 0.85
+  "confidence": 0.85,
+  "data_source": "polish"
 }
 ```
 
+API także wspiera amerykańskie dane (backward compatible)!
+
 ### Integracja z Frontendem (React/Vue)
 
-Przykład wywołania API z JavaScript:
+Przykład wywołania API z JavaScript (POLSKIE dane):
 
 ```javascript
 async function predictSTEM(studentData) {
+  // studentData zawiera polskie pola (Plec, Matura, Egzamin8, etc.)
   const response = await fetch('http://localhost:5000/predict', {
     method: 'POST',
     headers: {
@@ -220,11 +293,35 @@ async function predictSTEM(studentData) {
   });
   
   const result = await response.json();
-  console.log('Predykcja:', result.prediction);
+  console.log('Predykcja:', result.prediction);  // "STEM" lub "non-STEM"
   console.log('Pewność:', result.confidence);
+  console.log('Źródło danych:', result.data_source);  // "polish"
   return result;
 }
+
+// Przykładowe użycie
+const polishStudent = {
+  Plec: 'Mężczyzna',
+  Matura: 85,
+  Egzamin8: 75,
+  Dochody: 'Niżej średnie (3000-6000 PLN)',
+  Pochodzenie: 'Wieś',
+  Komputer: 4,
+  Przygotowanie: '2-3 godziny',
+  Gry: 'Więcej niż 3 godziny',
+  Frekwencja: '80%-100%',
+  Praca: 'Nie',
+  Angielski: 4,
+  Dodatkowe: 'Tak',
+  Semestr: 2,
+  Ostatnia: 4.5,
+  Srednia: 4.3
+};
+
+const result = await predictSTEM(polishStudent);
 ```
+
+**📄 Pełna dokumentacja integracji:** [`FRONTEND_INTEGRATION.md`](FRONTEND_INTEGRATION.md)
 
 ## Uwagi
 

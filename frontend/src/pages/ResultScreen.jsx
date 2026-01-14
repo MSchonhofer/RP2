@@ -33,17 +33,17 @@ function BreakdownChart({ data }) {
   if (!chartData.length) {
     return (
       <div className="chart-card">
-        <h3 className="chart-title">Breakdown</h3>
-        <p className="chart-subtitle">No breakdown data returned.</p>
+        <h3 className="chart-title">Szczegóły</h3>
+        <p className="chart-subtitle">Brak danych do wyświetlenia.</p>
       </div>
     )
   }
 
   return (
     <div className="chart-card">
-      <h3 className="chart-title">Breakdown by habits</h3>
+      <h3 className="chart-title">Podział według nawyków</h3>
       <p className="chart-subtitle">
-        Higher value means a stronger contribution to your profile.
+        Wyższa wartość oznacza silniejszy wpływ na Twój profil.
       </p>
 
       <div className="chart-wrapper">
@@ -84,7 +84,7 @@ function ResultScreen({ result, onRestart, onHome }) {
   if (!result) {
     return (
       <div className="question-card">
-        <p>Calculating results…</p>
+        <p>Obliczanie wyników…</p>
       </div>
     )
   }
@@ -114,12 +114,12 @@ function ResultScreen({ result, onRestart, onHome }) {
 
   return (
     <div className="question-card">
-      <h2 className="questionnaire-title">Your result</h2>
+      <h2 className="questionnaire-title">Twój wynik</h2>
 
       {/* SCORE */}
       <div className="score-bar-wrapper">
         <div className="score-bar-label-row">
-          <span>Self-discipline score</span>
+          <span>Wynik samodyscypliny</span>
           <span className="score-bar-number">{sd.toFixed(0)}%</span>
         </div>
 
@@ -133,10 +133,10 @@ function ResultScreen({ result, onRestart, onHome }) {
         <span className="stem-pill">{stemProb >= 0.5 ? 'STEM' : 'NON-STEM'}</span>
 
         <span className="stem-desc">
-          STEM fit:{' '}
+          Predykcja kierunku:{' '}
           <strong>
             <span className="stem-percent">{(stemProb * 100).toFixed(0)}%</span> –{' '}
-            {result.stem_fit_label}
+            {result.stem_fit_label || (stemProb >= 0.5 ? 'Kierunek STEM' : 'Kierunek non-STEM')}
           </strong>
         </span>
       </div>
@@ -146,10 +146,10 @@ function ResultScreen({ result, onRestart, onHome }) {
 
       <div className="question-nav">
         <button className="btn-ghost small" onClick={onRestart}>
-          Restart questionnaire
+          Rozpocznij ponownie
         </button>
         <button className="btn-primary small" onClick={onHome}>
-          Back to home
+          Powrót do strony głównej
         </button>
       </div>
     </div>

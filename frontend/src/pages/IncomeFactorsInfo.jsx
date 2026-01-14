@@ -8,30 +8,30 @@ function IncomeFactorsInfo() {
       <div className="hero-bg" />
 
       <div className="info-card">
-        <h2>Income & performance factors</h2>
+        <h2>Dochody i czynniki wyników</h2>
         <p>
-          Besides self-discipline, we also explore how family income and
-          previous results (SSC/HSC scores) relate to university CGPA and
-          field choice.
+          Oprócz samodyscypliny badamy również, jak dochody rodziny i
+          wcześniejsze wyniki (egzamin ósmoklasisty/matura) odnoszą się
+          do średniej ocen na studiach i wyboru kierunku.
         </p>
 
-        <h3>Example regression</h3>
+        <h3>Przykładowa regresja</h3>
         <pre className="formula-block">
-{`CGPA = α0
-     + α1 * SelfDiscipline
-     + α2 * HSC_score
-     + α3 * FamilyIncome_level
-     + ε`}
+{`Średnia = α0
+        + α1 * Samodyscyplina
+        + α2 * Wynik_Matury
+        + α3 * Poziom_Dochodów
+        + ε`}
         </pre>
 
         <p>
-          These models allow us to test whether self-discipline alone is
-          sufficient to explain success, or whether socio-economic and
-          academic background play a stronger role.
+          Te modele pozwalają nam sprawdzić, czy sama samodyscyplina
+          jest wystarczająca do wyjaśnienia sukcesu, czy też czynniki
+          społeczno-ekonomiczne i historia akademicka odgrywają silniejszą rolę.
         </p>
 
         <button className="btn-ghost small" onClick={() => navigate('/')}>
-          ← Back to home
+          ← Powrót do strony głównej
         </button>
       </div>
     </div>

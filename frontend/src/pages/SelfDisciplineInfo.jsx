@@ -8,28 +8,28 @@ function SelfDisciplineInfo() {
       <div className="hero-bg" />
 
       <div className="info-card">
-        <h2>Self-discipline index</h2>
+        <h2>Wskaźnik samodyscypliny</h2>
         <p>
-          In our research, self-discipline is treated as a combination of
-          several observable behaviours: study preparation time, control
-          over gaming and class attendance.
+          W naszym badaniu samodyscyplina jest traktowana jako kombinacja
+          kilku obserwowalnych zachowań: czasu poświęconego na naukę,
+          kontroli nad graniem w gry oraz frekwencji na zajęciach.
         </p>
 
-        <h3>Formula (conceptual)</h3>
+        <h3>Formuła (koncepcyjna)</h3>
         <pre className="formula-block">
-{`SelfDiscipline = w1 * StudyPrep_z
-                + w2 * Attendance_z
-                + w3 * GamingControl_z`}
+{`Samodyscyplina = w1 * Nauka_z
+                + w2 * Frekwencja_z
+                + w3 * KontrolaGier_z`}
         </pre>
 
         <p>
-          Each component is first converted into a numerical score and
-          standardised (z-score). We then combine them using weights learned
-          from the data.
+          Każdy komponent jest najpierw przekształcany na wynik numeryczny
+          i standaryzowany (z-score). Następnie łączymy je za pomocą wag
+          wyuczonych z danych.
         </p>
 
         <button className="btn-ghost small" onClick={() => navigate('/')}>
-          ← Back to home
+          ← Powrót do strony głównej
         </button>
       </div>
     </div>

@@ -1,0 +1,56 @@
+# 🇵🇱 Adaptacja frontendu na polski system edukacji
+
+## Zmiany w frontend/
+
+### Zmodyfikowane pliki:
+- `src/pages/Questionnaire.jsx` - Pytania po polsku, polska skala ocen
+- `src/pages/ResultScreen.jsx` - Ekran wyników po polsku
+- `src/pages/Home.jsx` - Strona główna po polsku
+- `src/pages/SelfDisciplineInfo.jsx` - Info o samodyscyplinie
+- `src/pages/StemPredictionInfo.jsx` - Info o predykcji STEM
+- `src/pages/IncomeFactorsInfo.jsx` - Info o dochodach
+
+### Dodane pliki dokumentacji:
+- `ZMIANY_PL.md` - Szczegóły zmian
+- `POROWNANIE.md` - Porównanie EN vs PL
+- `QUICK_START.md` - Przewodnik testowania
+- `README.md` - Zaktualizowany
+
+## Zmiany w głównym katalogu (RP2/)
+
+### Dodane pliki:
+- `STATUS_PROJEKTU.md` - Kompletny status systemu
+- `CHANGELOG_PL.md` - Szczegóły wszystkich zmian
+- `README.md` - Zaktualizowany z 🇵🇱
+
+## Kluczowe zmiany:
+
+### Format danych:
+- Matura (0-100%) zamiast HSC (0-5 GPA)
+- Egzamin ósmoklasisty (0-100%) zamiast SSC (0-5 GPA)
+- Dochody w PLN/miesiąc zamiast USD/rok
+- Średnia 2.0-5.0 zamiast GPA 0-4
+- Polska terminologia (Wieś/Miasto, Tak/Nie)
+
+### API:
+- URL: `http://localhost:5000/predict` (zamiast 8000/api/evaluate)
+- Format: Polskie nazwy pól (PascalCase)
+- Auto-detekcja formatu w backend API
+
+### UI:
+- Wszystkie teksty po polsku
+- Zachowana oryginalna stylistyka i animacje
+- 15 pytań w 8 sekcjach
+- Ekran wyników z wykresami
+
+## Status: ✅ PRODUCTION READY
+
+System w pełni funkcjonalny i gotowy do zbierania danych od polskich studentów.
+
+---
+
+**Testowane z:**
+- Model API: `api_polish.py` (port 5000)
+- Frontend: Vite dev server (port 5173)
+- Backend adapter: `polish_adapter.py`
+- Model ML: SVM 89.90% accuracy

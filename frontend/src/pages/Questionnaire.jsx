@@ -1,148 +1,214 @@
-// src/pages/Questionnaire.jsx
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as RechartsTooltip,
-  Line,
-} from 'recharts'
+import ResultScreen from './ResultScreen'
 
-const QUESTIONS = [
+/**
+ * Typy pytań:
+ * - choice: buttony (single-choice)
+ * - scale: buttony 1..5
+ * - number: input numeric (float)
+ */
+
+const QUESTIONNAIRE = [
   {
-    id: 'study_hours',
-    label: 'How many hours per day do you usually study outside of class?',
-    options: ['0–1 hour', '1–2 hours', '2–3 hours', 'More than 3 hours'],
-  },
-  {
-    id: 'gaming',
-    label: 'How much time do you spend on gaming per day?',
-    options: ['0–1 hour', '2–3 hours', 'More than 3 hours'],
-  },
-  {
-    id: 'attendance',
-    label: 'How often do you attend classes?',
-    options: ['Below 60%', '60–80%', 'Above 80%'],
-  },
-  // --- NOWE PYTANIE O MATEMATYKĘ ---
-  {
-    id: 'math_performance',
-    label: 'How would you rate your math performance in high school / entrance exams?',
-    options: [
-      'Below average',
-      'Around average',
-      'Above average',
-      'Top of the class',
+    section: 'Personal Information',
+    items: [
+      {
+        id: 'gender',
+        type: 'choice',
+        label: 'What is your gender?',
+        options: ['Male', 'Female', 'Other'],
+      },
+      {
+        id: 'hometown',
+        type: 'choice',
+        label: 'How would you classify your hometown based on its size/urbanization?',
+        options: ['Village', 'Town', 'City', 'Other'],
+      },
     ],
   },
   {
-    id: 'job',
-    label: 'Do you currently have a part-time or full-time job?',
-    options: ['No', 'Yes, part-time', 'Yes, full-time'],
-  },
-  {
-    id: 'income',
-    label: 'How would you describe your family income?',
-    options: ['Low', 'Lower middle', 'Upper middle', 'High'],
-  },
-  {
-    id: 'gender',
-    label: 'What is your gender?',
-    options: ['Woman', 'Man', 'Non-binary / other', 'Prefer not to say'],
-  },
-  {
-    id: 'department',
-    label: 'Which type of programme best describes your current studies?',
-    options: [
-      'STEM (science / engineering / technology / maths)',
-      'Business / economics / management',
-      'Humanities / social sciences / arts',
-      'Other / mixed programme',
+    section: 'Previous Academic Performance',
+    items: [
+      {
+        id: 'hsc_score',
+        type: 'number',
+        label: 'What was your HSC GPA or percentage?',
+        placeholder: 'e.g. 4.17',
+        min: 0,
+        max: 5,
+        step: 0.01,
+        helper: 'Enter a numeric value (e.g., 3.81).',
+      },
+      {
+        id: 'ssc_score',
+        type: 'number',
+        label: 'What was your SSC GPA or percentage?',
+        placeholder: 'e.g. 3.81',
+        min: 0,
+        max: 5,
+        step: 0.01,
+        helper: 'Enter a numeric value (e.g., 4.25).',
+      },
     ],
   },
   {
-    id: 'hometown',
-    label: 'Where did you mostly live before university?',
-    options: [
-      'Rural area / village',
-      'Small town',
-      'Medium-size city',
-      'Large city / metropolitan area',
+    section: 'Family & Socioeconomic Background',
+    items: [
+      {
+        id: 'income',
+        type: 'choice',
+        label: 'What is your family income level?',
+        options: [
+          'Low (Below 15,000)',
+          'Lower middle (15,000–30,000)',
+          'Upper middle (30,000–50,000)',
+          'High (Above 50,000)',
+        ],
+      },
+    ],
+  },
+  {
+    section: 'Technology Access',
+    items: [
+      {
+        id: 'computer_proficiency',
+        type: 'scale',
+        label: 'What is your proficiency level in computer usage?',
+        minLabel: '1 = Low',
+        maxLabel: '5 = High',
+      },
+    ],
+  },
+  {
+    section: 'Study & Preparation Habits',
+    items: [
+      {
+        id: 'preparation_time',
+        type: 'choice',
+        label: 'How many hours per week do you spend preparing/studying for your courses?',
+        options: ['0–1 Hour', '1–3 Hours', 'More than 3 Hours'],
+      },
+      {
+        id: 'gaming_time',
+        type: 'choice',
+        label: 'How many hours per week do you spend playing video games?',
+        options: ['0–1 Hour', '1–3 Hours', 'More than 3 Hours'],
+      },
+    ],
+  },
+  {
+    section: 'Class Engagement',
+    items: [
+      {
+        id: 'attendance',
+        type: 'choice',
+        label: 'What is your class attendance rate?',
+        options: ['0–50%', '50–80%', '80–100%'],
+      },
+      {
+        id: 'extracurricular',
+        type: 'choice',
+        label: 'Do you participate in extracurricular activities?',
+        options: ['Yes', 'No'],
+      },
+    ],
+  },
+  {
+    section: 'Work & Language Skills',
+    items: [
+      {
+        id: 'job',
+        type: 'choice',
+        label: 'Do you currently have a job or paid employment?',
+        options: ['Yes', 'No'],
+      },
+      {
+        id: 'english_proficiency',
+        type: 'scale',
+        label: 'Rate your English language skills on a scale of 1–5.',
+        minLabel: '1 = Poor',
+        maxLabel: '5 = Excellent',
+      },
+    ],
+  },
+  {
+    section: 'Course Information',
+    items: [
+      {
+        id: 'semester',
+        type: 'choice',
+        label: 'Which semester are you currently in?',
+        options: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', 'Other'],
+      },
+      {
+        id: 'last_sem_gpa',
+        type: 'number',
+        label: 'What was your GPA point for the last semester?',
+        placeholder: 'e.g. 4.17',
+        min: 0,
+        max: 5,
+        step: 0.01,
+      },
+      {
+        id: 'overall_gpa',
+        type: 'number',
+        label: 'What is your overall GPA point until now?',
+        placeholder: 'e.g. 3.81',
+        min: 0,
+        max: 5,
+        step: 0.01,
+      },
     ],
   },
 ]
 
+// spłaszczamy pytania do kroków
+const FLAT_QUESTIONS = QUESTIONNAIRE.flatMap((sec) =>
+  sec.items.map((q) => ({ ...q, section: sec.section }))
+)
+
+// <-- dopasuj jak masz inaczej
 const API_URL = 'http://127.0.0.1:8000/api/evaluate'
 
+// helper: zamienia "4,17" -> 4.17
+const toFloat = (val) => {
+  if (val === null || val === undefined || val === '') return null
+  const s = String(val).replace(',', '.')
+  const n = Number(s)
+  return Number.isFinite(n) ? n : null
+}
+
 function Questionnaire() {
+  const navigate = useNavigate()
+
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
   const [finished, setFinished] = useState(false)
-  const [result, setResult] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [animatedScore, setAnimatedScore] = useState(0)
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
 
-  const navigate = useNavigate()
+  const current = FLAT_QUESTIONS[step]
+  const currentValue = answers[current?.id]
+  const total = FLAT_QUESTIONS.length
 
-  const currentQuestion = QUESTIONS[step]
-  const currentAnswer = answers[currentQuestion?.id]
-
-  const handleOptionClick = (value) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: value,
-    }))
-  }
-
-  const handleNext = async () => {
-    if (!currentAnswer || submitting) return
-
-    const updatedAnswers = {
-      ...answers,
-      [currentQuestion.id]: currentAnswer,
+  const isValidCurrent = useMemo(() => {
+    if (!current) return false
+    if (current.type === 'choice') return !!currentValue
+    if (current.type === 'scale') return Number.isFinite(Number(currentValue))
+    if (current.type === 'number') {
+      const v = toFloat(currentValue)
+      if (v === null) return false
+      if (typeof current.min === 'number' && v < current.min) return false
+      if (typeof current.max === 'number' && v > current.max) return false
+      return true
     }
+    return false
+  }, [current, currentValue])
 
-    // ostatni krok -> wywołanie backendu
-    if (step === QUESTIONS.length - 1) {
-      setSubmitting(true)
-      setAnswers(updatedAnswers)
-
-      try {
-        const resp = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            study_hours: updatedAnswers.study_hours,
-            gaming: updatedAnswers.gaming,
-            attendance: updatedAnswers.attendance,
-            math_performance: updatedAnswers.math_performance,
-            job: updatedAnswers.job,
-            income: updatedAnswers.income,
-            gender: updatedAnswers.gender,
-            department: updatedAnswers.department,
-            hometown: updatedAnswers.hometown,
-          }),
-        })
-
-        if (!resp.ok) {
-          console.error('Backend error', resp.status)
-        } else {
-          const data = await resp.json()
-          setResult(data)
-        }
-      } catch (err) {
-        console.error('Error calling backend', err)
-      } finally {
-        setSubmitting(false)
-        setFinished(true)
-      }
-    } else {
-      setAnswers(updatedAnswers)
-      setStep((s) => s + 1)
-    }
+  const setAnswer = (id, value) => {
+    setAnswers((prev) => ({ ...prev, [id]: value }))
   }
 
   const handleBack = () => {
@@ -153,42 +219,82 @@ function Questionnaire() {
     setAnswers({})
     setStep(0)
     setFinished(false)
+    setSubmitting(false)
     setResult(null)
-    setAnimatedScore(0)
+    setError('')
   }
 
-  // animacja wzrostu paska self-discipline
-  useEffect(() => {
-    if (finished && result) {
-      const target = result.self_discipline_score
-      const duration = 900
-      const startTime = performance.now()
+  const buildPayload = (a) => ({
+    department: a.department ?? null,
+    gender: a.gender ?? null,
+    hometown: a.hometown ?? null,
+    income: a.income ?? null,
 
-      const tick = (now) => {
-        const progress = Math.min((now - startTime) / duration, 1)
-        const value = target * progress
-        setAnimatedScore(value)
-        if (progress < 1) {
-          requestAnimationFrame(tick)
-        }
+    computer_proficiency: a.computer_proficiency ? Number(a.computer_proficiency) : null,
+
+    preparation_time: a.preparation_time ?? null,
+    gaming_time: a.gaming_time ?? null,
+
+    attendance: a.attendance ?? null,
+    extracurricular: a.extracurricular ?? null,
+
+    job: a.job ?? null,
+    english_proficiency: a.english_proficiency ? Number(a.english_proficiency) : null,
+
+    semester: a.semester ?? null,
+
+    hsc_score: toFloat(a.hsc_score),
+    ssc_score: toFloat(a.ssc_score),
+    last_sem_gpa: toFloat(a.last_sem_gpa),
+    overall_gpa: toFloat(a.overall_gpa),
+  })
+
+  const handleNext = async () => {
+    if (!isValidCurrent || submitting) return
+
+    // ostatni krok => call backend => wynik => finished
+    if (step === total - 1) {
+      setSubmitting(true)
+      setError('')
+      setResult(null)
+
+      const payload = buildPayload(answers)
+
+      try {
+        const resp = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!resp.ok) {
+  const errJson = await resp.json().catch(() => null)
+  console.error('422 details:', errJson)
+  throw new Error(
+    errJson?.detail ? JSON.stringify(errJson.detail) : `Backend error: ${resp.status}`
+  )
+}
+
+        const data = await resp.json()
+        setResult(data)
+        setFinished(true)
+      } catch (e) {
+        console.error(e)
+        setError('Could not calculate your result. Please try again.')
+      } finally {
+        setSubmitting(false)
       }
 
-      requestAnimationFrame(tick)
+      return
     }
-  }, [finished, result])
 
-  const stemBadge =
-    result && result.stem_fit_probability >= 0.5 ? 'STEM' : 'non-STEM'
+    setStep((s) => s + 1)
+  }
 
-  const breakdownData =
-    result
-      ? [
-          { name: 'Study', value: result.study_component },
-          { name: 'Attendance', value: result.attendance_component },
-          { name: 'Gaming', value: result.gaming_component },
-          { name: 'Work', value: result.job_component },
-        ]
-      : []
+  // sekcja: pokazuj nagłówek tylko jak się zmienia
+  const sectionLabel = current?.section
+  const prevSectionLabel = FLAT_QUESTIONS[step - 1]?.section
+  const showSectionHeader = step === 0 || sectionLabel !== prevSectionLabel
 
   return (
     <div className="app-root">
@@ -197,181 +303,114 @@ function Questionnaire() {
       <div className="questionnaire-shell">
         {!finished ? (
           <>
-            <h1 className="questionnaire-section-title">
-              Self-discipline questionnaire
-            </h1>
+            <h1 className="questionnaire-section-title">Self-discipline questionnaire</h1>
 
             <div className="questionnaire-header">
               <div>
                 <h2 className="questionnaire-title">
-                  Question {step + 1} of {QUESTIONS.length}
+                  Question {step + 1} of {total}
                 </h2>
+
+                {showSectionHeader && (
+                  <div className="questionnaire-category">
+                    <span className="questionnaire-category-pill">{sectionLabel}</span>
+                  </div>
+                )}
               </div>
 
-              <button
-                className="btn-ghost small exit-btn"
-                onClick={() => navigate('/')}
-                disabled={submitting}
-              >
+              <button className="btn-ghost small exit-btn" onClick={() => navigate('/')} disabled={submitting}>
                 Exit
               </button>
             </div>
 
             <div key={step} className="question-card">
-              <p className="question-label">{currentQuestion.label}</p>
+              <p className="question-label">{current.label}</p>
 
-              <div className="question-options">
-                {currentQuestion.options.map((opt) => (
-                  <button
-                    key={opt}
-                    className={`option-btn ${
-                      currentAnswer === opt ? 'option-btn-selected' : ''
-                    }`}
-                    onClick={() => handleOptionClick(opt)}
-                    disabled={submitting}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
+              {/* CHOICE */}
+              {current.type === 'choice' && (
+                <div className="question-options">
+                  {current.options.map((opt) => (
+                    <button
+                      key={opt}
+                      className={`option-btn ${currentValue === opt ? 'option-btn-selected' : ''}`}
+                      onClick={() => setAnswer(current.id, opt)}
+                      disabled={submitting}
+                      type="button"
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* SCALE 1-5 */}
+              {current.type === 'scale' && (
+                <div className="scale-wrap">
+                  <div className="scale-hint-row">
+                    <span className="scale-hint">{current.minLabel}</span>
+                    <span className="scale-hint">{current.maxLabel}</span>
+                  </div>
+
+                  <div className="scale-buttons">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        className={`option-btn scale-btn ${Number(currentValue) === n ? 'option-btn-selected' : ''}`}
+                        onClick={() => setAnswer(current.id, n)}
+                        disabled={submitting}
+                        type="button"
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* NUMBER */}
+              {current.type === 'number' && (
+                <div className="number-wrap">
+                  {current.helper && <p className="number-helper">{current.helper}</p>}
+
+                  <div className="number-input-row">
+                    <input
+                      className="number-input"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder={current.placeholder || 'e.g. 4.17'}
+                      value={currentValue ?? ''}
+                      onChange={(e) => setAnswer(current.id, e.target.value)}
+                      disabled={submitting}
+                    />
+                    <span className="number-range">
+                      {typeof current.min === 'number' && typeof current.max === 'number'
+                        ? `${current.min}–${current.max}`
+                        : ''}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {error && <p className="question-note" style={{ marginTop: 10 }}>{error}</p>}
 
               <div className="question-nav">
-                <button
-                  className="btn-ghost small"
-                  onClick={handleBack}
-                  disabled={step === 0 || submitting}
-                >
+                <button className="btn-ghost small" onClick={handleBack} disabled={step === 0 || submitting}>
                   ← Back
                 </button>
 
-                <button
-                  className="btn-primary small next-btn"
-                  onClick={handleNext}
-                  disabled={!currentAnswer || submitting}
-                >
-                  {step === QUESTIONS.length - 1 && submitting
-                    ? 'Calculating...'
-                    : 'Next →'}
+                <button className="btn-primary small next-btn" onClick={handleNext} disabled={!isValidCurrent || submitting}>
+                  {step === total - 1 && submitting ? 'Calculating…' : 'Next →'}
                 </button>
               </div>
             </div>
           </>
         ) : (
-          <div className="question-card">
-            <h2 className="questionnaire-title">Your result</h2>
-
-            {result ? (
-              <>
-                {/* główny pasek self-discipline */}
-                <div className="score-bar-wrapper">
-                  <div className="score-bar-label-row">
-                    <span>Self-discipline score</span>
-                    <span className="score-bar-number">
-                      {animatedScore.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="score-bar-track">
-                    <div
-                      className="score-bar-fill"
-                      style={{ width: `${Math.min(animatedScore, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* STEM / non-STEM highlight */}
-                <div className="stem-highlight">
-                  <span className="stem-pill">{stemBadge}</span>
-                  <span className="stem-desc">
-                    STEM fit:{' '}
-                    <strong>
-                      <span className="stem-percent">
-                        {(result.stem_fit_probability * 100).toFixed(0)}%
-                      </span>{' '}
-                      – {result.stem_fit_label}
-                    </strong>
-                  </span>
-                </div>
-
-                {/* wykres breakdown */}
-                <div className="chart-card">
-                  <h3 className="chart-title">Breakdown by habits</h3>
-                  <p className="chart-subtitle">
-                    Each point shows how strong this factor is in your
-                    self-discipline profile.
-                  </p>
-
-                  <div className="chart-wrapper">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <BarChart
-                        data={breakdownData}
-                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                        //style={{ background: 'transparent' }} // brak jasnego tła SVG
-                      >
-                        {/* bez CartesianGrid – czyściutki wykres */}
-                        <XAxis
-                          dataKey="name"
-                          stroke="#9ca3af"
-                          tick={{ fontSize: 12 }}
-                          axisLine={{ stroke: '#4b5563' }}
-                        />
-                        <YAxis
-                          stroke="#9ca3af"
-                          tick={{ fontSize: 11 }}
-                          axisLine={{ stroke: '#4b5563' }}
-                          tickFormatter={(v) => `${v.toFixed(0)}%`}
-                        />
-                        <RechartsTooltip
-                          contentStyle={{
-                            background: '#020617',
-                            border: '1px solid rgba(148,163,184,0.8)',
-                            borderRadius: 10,
-                            fontSize: 12,
-                            color: '#e5e7eb',
-                          }}
-                          labelStyle={{ color: '#e5e7eb', marginBottom: 4 }}
-                          formatter={(value) => [
-                            `${Number(value).toFixed(1)}%`,
-                            'Score',
-                          ]}
-                        />
-                        <Bar
-                          dataKey="value"
-                          fill="#a855f7"
-                          radius={[6, 6, 0, 0]}
-                          activeBar={{ fill: '#a855f7' }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          stroke="#22c55e"
-                          strokeWidth={2}
-                          dot={{ r: 3 }}
-                          activeDot={{ r: 5 }}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="question-note">
-                We couldn&apos;t fetch the calculated score. Please try again
-                later.
-              </p>
-            )}
-
-            <div className="question-nav">
-              <button className="btn-ghost small" onClick={restart}>
-                Restart questionnaire
-              </button>
-              <button
-                className="btn-primary small"
-                onClick={() => navigate('/')}
-              >
-                Back to home
-              </button>
-            </div>
-          </div>
+          <ResultScreen
+            answers={answers}
+            result={result}
+            onRestart={restart}
+            onHome={() => navigate('/')}
+          />
         )}
       </div>
     </div>

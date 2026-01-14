@@ -1,181 +1,158 @@
+from typing import Optional, Literal, Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from math import exp
+from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI()
 
+# CORS (Vite/React)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# --- mapowania kategorii na [0,1] ---
 
-STUDY_MAP = {
-    "0–1 hour": 0.25,
-    "1–2 hours": 0.55,
-    "2–3 hours": 0.8,
-    "More than 3 hours": 1.0,
-}
+def _coerce_float(v):
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    if isinstance(v, str):
+        s = v.strip().replace(",", ".")
+        if s == "":
+            return None
+        return float(s)
+    return float(v)
 
-GAMING_MAP = {
-    "0–1 hour": 1.0,
-    "2–3 hours": 0.6,
-    "More than 3 hours": 0.2,
-}
-
-ATTENDANCE_MAP = {
-    "Below 60%": 0.2,
-    "60–80%": 0.6,
-    "Above 80%": 1.0,
-}
-
-JOB_MAP = {
-    "No": 1.0,
-    "Yes, part-time": 0.8,
-    "Yes, full-time": 0.6,
-}
-
-INCOME_MAP = {
-    "Low": 0.4,
-    "Lower middle": 0.55,
-    "Upper middle": 0.7,
-    "High": 0.8,
-}
-
-HOMETOWN_MAP = {
-    "Rural area / village": 0.4,
-    "Small town": 0.55,
-    "Medium-size city": 0.7,
-    "Large city / metropolitan area": 0.8,
-}
-
-DEPT_STEM_MAP = {
-    "STEM (science / engineering / technology / maths)": 1.0,
-    "Business / economics / management": 0.6,
-    "Humanities / social sciences / arts": 0.3,
-    "Other / mixed programme": 0.5,
-}
-
-# NOWE: samoocena wyników z matmy
-MATH_MAP = {
-    "Below average": 0.3,
-    "Around average": 0.5,
-    "Above average": 0.75,
-    "Top of the class": 1.0,
-}
-
-
-# --- modele wejścia / wyjścia ---
-
-
-class QuestionnaireInput(BaseModel):
-    study_hours: str
-    gaming: str
-    attendance: str
-    job: str
-    income: str
-    gender: str
+class EvaluationRequest(BaseModel):
     department: str
+    gender: str
     hometown: str
-    math_performance: str   # NOWE POLE
 
+    hsc_score: float = Field(..., ge=0)
+    ssc_score: float = Field(..., ge=0)
 
-class QuestionnaireResult(BaseModel):
+    income: str
+
+    computer_proficiency: int = Field(..., ge=1, le=5)
+
+    preparation_time: str
+    gaming_time: str
+
+    attendance: str
+    extracurricular: str  # "Yes"/"No"
+
+    job: str  # "Yes"/"No"
+    english_proficiency: int = Field(..., ge=1, le=5)
+
+    semester: str
+
+    last_sem_gpa: float = Field(..., ge=0)
+    overall_gpa: float = Field(..., ge=0)
+
+    # pozwól przyjąć "4,17" z FE jeśli kiedyś przejdzie jako string
+    @field_validator("hsc_score", "ssc_score", "last_sem_gpa", "overall_gpa", mode="before")
+    @classmethod
+    def parse_float(cls, v):
+        return _coerce_float(v)
+
+class EvaluationResponse(BaseModel):
     self_discipline_score: float
     stem_fit_probability: float
     stem_fit_label: str
+    components: Dict[str, float]
 
-    study_component: float
-    gaming_component: float
-    attendance_component: float
-    job_component: float
+def clamp01(x: float) -> float:
+    return max(0.0, min(1.0, x))
 
-    math_component: float             # % z matmy (0–100)
-    academic_potential_score: float   # łączny „potencjał akademicki” (self-disc + math)
+# --- PROSTA, SENSOWNA HEURYSTYKA (na start; potem podmienimy na model z CSV) ---
+def map_preparation_time(v: str) -> float:
+    # 0..1
+    return {
+        "0–1 Hour": 0.2,
+        "1–3 Hours": 0.6,
+        "More than 3 Hours": 0.9,
+    }.get(v, 0.5)
 
+def map_gaming_time(v: str) -> float:
+    # więcej grania = niższy komponent (0..1)
+    return {
+        "0–1 Hour": 0.85,
+        "1–3 Hours": 0.55,
+        "More than 3 Hours": 0.25,
+    }.get(v, 0.5)
 
-# --- funkcje pomocnicze ---
+def map_attendance(v: str) -> float:
+    return {
+        "0–50%": 0.25,
+        "50–80%": 0.6,
+        "80–100%": 0.9,
+    }.get(v, 0.5)
 
+def map_yesno(v: str) -> float:
+    return 1.0 if v == "Yes" else 0.0
 
-def sigmoid(z: float) -> float:
-    return 1.0 / (1.0 + exp(-z))
+def normalize_gpa(x: float, max_gpa: float = 5.0) -> float:
+    return clamp01(x / max_gpa)
 
+def stem_fit(req: EvaluationRequest) -> float:
+    # “STEM-fit” – uproszczony scoring:
+    # - lepsze GPA + lepszy computer proficiency + English -> wyżej
+    # - department jeśli CS/Engineering -> bonus
+    base = 0.35 * normalize_gpa(req.overall_gpa) + 0.25 * (req.computer_proficiency / 5) + 0.15 * (req.english_proficiency / 5)
+    dept_bonus = 0.15 if req.department in ["Computer Science", "Engineering"] else 0.0
+    return clamp01(base + dept_bonus)
 
-def safe_map(value: str, mapping: dict, default: float = 0.5) -> float:
-    return mapping.get(value, default)
+def self_discipline(req: EvaluationRequest) -> Dict[str, float]:
+    study = map_preparation_time(req.preparation_time)
+    attendance = map_attendance(req.attendance)
+    gaming = map_gaming_time(req.gaming_time)
+    work = 0.6 if req.job == "No" else 0.45  # praca może obniżać czas; neutralnie/lekko w dół
 
+    # akademicki komponent (GPA)
+    academics = 0.5 * normalize_gpa(req.last_sem_gpa) + 0.5 * normalize_gpa(req.overall_gpa)
 
-def compute_scores(payload: QuestionnaireInput) -> QuestionnaireResult:
-    # 1. komponenty w [0,1]
-    study_score = safe_map(payload.study_hours, STUDY_MAP)
-    gaming_score = safe_map(payload.gaming, GAMING_MAP)
-    attendance_score = safe_map(payload.attendance, ATTENDANCE_MAP)
-    job_score = safe_map(payload.job, JOB_MAP)
-
-    income_score = safe_map(payload.income, INCOME_MAP)
-    hometown_score = safe_map(payload.hometown, HOMETOWN_MAP)
-    dept_stem_score = safe_map(payload.department, DEPT_STEM_MAP)
-
-    math_score = safe_map(payload.math_performance, MATH_MAP)
-
-    # 2. self-discipline (główny bohater)
-    self_disc_raw = (
-        0.40 * study_score
-        + 0.25 * attendance_score
-        + 0.20 * gaming_score
-        + 0.15 * job_score
+    # wynik końcowy 0..1
+    score = clamp01(
+        0.28 * study +
+        0.26 * attendance +
+        0.18 * gaming +
+        0.10 * work +
+        0.18 * academics
     )
-    self_discipline_score = self_disc_raw * 100.0
 
-    # 3. STEM fit – self-discipline ma trochę większą wagę niż math
-    self_disc_norm = self_discipline_score / 100.0
+    return {
+        "score": score,
+        "study": study * 100,
+        "attendance": attendance * 100,
+        "gaming": gaming * 100,
+        "work": work * 100,
+        "academics": academics * 100,
+    }
 
-    z = (
-        -0.8
-        + 1.4 * self_disc_norm     # mocny wpływ samodyscypliny
-        + 0.9 * math_score         # nieco słabszy, ale wciąż ważny wpływ matmy
-        + 0.6 * dept_stem_score
-        + 0.25 * income_score
-        + 0.25 * hometown_score
-    )
-    stem_fit_probability = sigmoid(z)
+@app.post("/api/evaluate", response_model=EvaluationResponse)
+def evaluate(req: EvaluationRequest):
+    sd = self_discipline(req)
+    stem_p = stem_fit(req)
 
-    if stem_fit_probability < 0.4:
-        stem_fit_label = "more likely non-STEM"
-    elif stem_fit_probability < 0.6:
-        stem_fit_label = "balanced / either"
+    if stem_p >= 0.65:
+        label = "strong STEM fit"
+    elif stem_p >= 0.50:
+        label = "moderate STEM fit"
     else:
-        stem_fit_label = "more likely STEM"
+        label = "leaning non-STEM"
 
-    # 4. „Academic potential” – 60% self-discipline, 40% math
-    academic_potential_score = (
-        0.6 * self_disc_norm + 0.4 * math_score
-    ) * 100.0
-
-    return QuestionnaireResult(
-        self_discipline_score=round(self_discipline_score, 2),
-        stem_fit_probability=stem_fit_probability,
-        stem_fit_label=stem_fit_label,
-
-        study_component=round(study_score * 100.0, 2),
-        gaming_component=round(gaming_score * 100.0, 2),
-        attendance_component=round(attendance_score * 100.0, 2),
-        job_component=round(job_score * 100.0, 2),
-
-        math_component=round(math_score * 100.0, 2),
-        academic_potential_score=round(academic_potential_score, 2),
+    return EvaluationResponse(
+        self_discipline_score=sd["score"],
+        stem_fit_probability=stem_p,
+        stem_fit_label=label,
+        components={
+            "study": sd["study"],
+            "attendance": sd["attendance"],
+            "gaming": sd["gaming"],
+            "work": sd["work"],
+            "academics": sd["academics"],
+        },
     )
-
-
-@app.post("/api/evaluate", response_model=QuestionnaireResult)
-def evaluate(input_data: QuestionnaireInput):
-    return compute_scores(input_data)

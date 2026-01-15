@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -5,112 +6,103 @@ import {
   XAxis,
   YAxis,
   Tooltip as RechartsTooltip,
-} from 'recharts'
+} from "recharts";
 
-function BreakdownChart({ data }) {
-  // data może być:
-  // 1) obiektem: { study: 60, attendance: 80, gaming: 40, work: 55 }
-  // 2) tablicą obiektów: [{name:'Study', value: 60}, ...]
-  // 3) null/undefined -> pokazujemy pusty stan
+/**
+ * Accepts:
+ * 1) components as ARRAY: [{ name: "Self-discipline", value: 0.64 }, ...]
+ * 2) components as OBJECT: { "Self-discipline": 0.64, "Academic": 0.71, ... }
+ */
+function BreakdownChart({ components }) {
+  const chartData = useMemo(() => {
+    if (!components) return [];
 
-  let chartData = []
+    // Case 1: array of {name, value}
+    if (Array.isArray(components)) {
+      return components
+        .map((c) => ({
+          name: String(c?.name ?? ""),
+          value: Number(c?.value),
+        }))
+        .filter((d) => d.name && Number.isFinite(d.value));
+    }
 
-  if (Array.isArray(data)) {
-    chartData = data
-  } else if (data && typeof data === 'object') {
-    const map = [
-      { key: 'study', name: 'Study' },
-      { key: 'attendance', name: 'Attendance' },
-      { key: 'gaming', name: 'Gaming' },
-      { key: 'work', name: 'Work' },
-      { key: 'academics', name: 'Academics' }, // jeśli kiedyś dodasz
-    ]
-    chartData = map
-      .filter((m) => data[m.key] !== undefined && data[m.key] !== null)
-      .map((m) => ({ name: m.name, value: Number(data[m.key]) }))
-  }
+    // Case 2: object map {name: value}
+    if (typeof components === "object") {
+      return Object.entries(components)
+        .map(([k, v]) => ({
+          name: String(k),
+          value: Number(v),
+        }))
+        .filter((d) => d.name && Number.isFinite(d.value));
+    }
 
-  if (!chartData.length) {
-    return (
-      <div className="chart-card">
-        <h3 className="chart-title">Breakdown</h3>
-        <p className="chart-subtitle">No breakdown data returned.</p>
-      </div>
-    )
-  }
+    return [];
+  }, [components]);
 
   return (
     <div className="chart-card">
       <h3 className="chart-title">Breakdown by habits</h3>
       <p className="chart-subtitle">
-        Higher value means a stronger contribution to your profile.
+        This chart shows how strong each factor is in your profile.
       </p>
 
       <div className="chart-wrapper">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+          >
             <XAxis
               dataKey="name"
               stroke="#9ca3af"
               tick={{ fontSize: 12 }}
-              axisLine={{ stroke: '#4b5563' }}
+              axisLine={{ stroke: "#4b5563" }}
+              tickLine={{ stroke: "#4b5563" }}
             />
             <YAxis
-              stroke="#9ca3af"
-              tick={{ fontSize: 11 }}
-              axisLine={{ stroke: '#4b5563' }}
-              tickFormatter={(v) => `${Number(v).toFixed(0)}%`}
-            />
-            <RechartsTooltip
-              contentStyle={{
-                background: '#020617',
-                border: '1px solid rgba(148,163,184,0.8)',
-                borderRadius: 10,
-                fontSize: 12,
-                color: '#e5e7eb',
-              }}
-              labelStyle={{ color: '#e5e7eb', marginBottom: 4 }}
-              formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Score']}
-            />
+  stroke="#9ca3af"
+  tick={{ fontSize: 11 }}
+  axisLine={{ stroke: "#4b5563" }}
+  tickLine={{ stroke: "#4b5563" }}
+  domain={[0, 100]}
+  tickFormatter={(v) => `${Math.round(v)}%`}
+/>
+
+<RechartsTooltip
+  contentStyle={{
+    background: "#020617",
+    border: "1px solid rgba(148,163,184,0.8)",
+    borderRadius: 10,
+    fontSize: 12,
+    color: "#e5e7eb",
+  }}
+  labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
+  formatter={(value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return ["—", "Score"];
+    return [`${Math.round(num)}%`, "Score"];
+  }}
+/>
+
             <Bar dataKey="value" fill="#a855f7" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }
 
-function ResultScreen({ result, onRestart, onHome }) {
+export default function ResultScreen({ result, onRestart, onHome }) {
   if (!result) {
     return (
       <div className="question-card">
         <p>Calculating results…</p>
       </div>
-    )
+    );
   }
 
-  // self_discipline_score może być 0..1 albo 0..100 – zabezpieczenie:
-  const sd =
-    result.self_discipline_score > 1
-      ? result.self_discipline_score
-      : result.self_discipline_score * 100
-
-  const stemProb =
-    result.stem_fit_probability > 1
-      ? result.stem_fit_probability / 100
-      : result.stem_fit_probability
-
-  // breakdown: obsłuż oba formaty:
-  // A) result.components
-  // B) stare pola: study_component / attendance_component / gaming_component / job_component
-  const breakdown =
-    result.components ??
-    {
-      study: result.study_component,
-      attendance: result.attendance_component,
-      gaming: result.gaming_component,
-      work: result.job_component,
-    }
+  const stemBadge = result.stem_fit_probability >= 0.5 ? "STEM" : "NON-STEM";
 
   return (
     <div className="question-card">
@@ -120,29 +112,36 @@ function ResultScreen({ result, onRestart, onHome }) {
       <div className="score-bar-wrapper">
         <div className="score-bar-label-row">
           <span>Self-discipline score</span>
-          <span className="score-bar-number">{sd.toFixed(0)}%</span>
+          <span className="score-bar-number">
+            {Math.round(result.self_discipline_score * 100)}%
+          </span>
         </div>
 
         <div className="score-bar-track">
-          <div className="score-bar-fill" style={{ width: `${Math.min(sd, 100)}%` }} />
+          <div
+            className="score-bar-fill"
+            style={{ width: `${Math.max(0, Math.min(1, result.self_discipline_score)) * 100}%` }}
+          />
         </div>
       </div>
 
       {/* STEM */}
       <div className="stem-highlight">
-        <span className="stem-pill">{stemProb >= 0.5 ? 'STEM' : 'NON-STEM'}</span>
+        <span className="stem-pill">{stemBadge}</span>
 
         <span className="stem-desc">
-          STEM fit:{' '}
+          STEM fit:{" "}
           <strong>
-            <span className="stem-percent">{(stemProb * 100).toFixed(0)}%</span> –{' '}
-            {result.stem_fit_label}
+            <span className="stem-percent">
+              {Math.round(result.stem_fit_probability * 100)}%
+            </span>{" "}
+            – {result.stem_fit_label}
           </strong>
         </span>
       </div>
 
-      {/* WYKRES */}
-      <BreakdownChart data={breakdown} />
+      {/* CHART */}
+      <BreakdownChart components={result.components} />
 
       <div className="question-nav">
         <button className="btn-ghost small" onClick={onRestart}>
@@ -153,7 +152,5 @@ function ResultScreen({ result, onRestart, onHome }) {
         </button>
       </div>
     </div>
-  )
+  );
 }
-
-export default ResultScreen

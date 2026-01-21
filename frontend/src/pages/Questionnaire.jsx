@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ResultScreen from "./ResultScreen";
 
-const API_URL = "http://127.0.0.1:8000/api/evaluate";
+const API_URL = "https://rp2-fw2v.onrender.com/api/evaluate";
 
 const QUESTIONS = [
   { section: "Personal information", id: "gender", type: "choice", label: "What is your gender?", options: ["Male", "Female", "Other"] },

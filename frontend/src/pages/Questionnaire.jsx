@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ResultScreen from "./ResultScreen";
 
-# deployment
+// deployment
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const API_URL = API_BASE ? `${API_BASE}/api/evaluate` : null;
 

@@ -13,17 +13,17 @@ const QUESTIONS = [
     section: "Family & socioeconomic background",
     id: "income",
     type: "choice",
-    label: "What is your family income level?",
+    label: "What is your monthly family income (net, in PLN)?",
     options: [
-      "Low (Below 15,000)",
-      "Lower middle (15,000-30,000)",
-      "Upper middle (30,000-50,000)",
-      "High (Above 50,000)",
+      "Low (Below 7,000 PLN)",
+      "Lower middle (7,000-10,000 PLN)",
+      "Upper middle (10,000-13,000 PLN)",
+      "High (Above 13,000 PLN)",
     ],
   },
 
-  { section: "Previous academic performance", id: "ssc", type: "number", label: "SSC GPA/Score (0–5)", min: 0, max: 5, step: 0.01, placeholder: "e.g. 4.17" },
-  { section: "Previous academic performance", id: "hsc", type: "number", label: "HSC GPA/Score (0–5)", min: 0, max: 5, step: 0.01, placeholder: "e.g. 3.81" },
+  { section: "Previous academic performance", id: "ssc", type: "number", label: "Primary school average grade (1–6)", min: 1, max: 6, step: 0.01, placeholder: "e.g. 4.5" },
+  { section: "Previous academic performance", id: "hsc", type: "number", label: "High school average grade (1–6)", min: 1, max: 6, step: 0.01, placeholder: "e.g. 4.8" },
 
   { section: "Technology access", id: "computer", type: "scale", label: "Computer usage proficiency (1–5)", min: 1, max: 5 },
 
@@ -31,14 +31,14 @@ const QUESTIONS = [
   { section: "Study & preparation habits", id: "gaming", type: "choice", label: "How many hours per week do you spend playing video games?", options: ["0-1 Hour", "2-3 Hours", "More than 3 Hours"] },
 
   { section: "Class engagement", id: "attendance", type: "choice", label: "What is your class attendance rate?", options: ["Below 40%", "40%-59%", "60%-79%", "80%-100%"] },
-  { section: "Class engagement", id: "extra", type: "choice", label: "Do you participate in extracurricular activities?", options: ["Yes", "No"] },
+  { section: "Class engagement", id: "extra", type: "choice", label: "Do you participate in extracurricular activities? (sports, music, student clubs)", options: ["Yes", "No"] },
 
   { section: "Work & language skills", id: "job", type: "choice", label: "Do you currently have a paid job?", options: ["Yes", "No"] },
   { section: "Work & language skills", id: "english", type: "scale", label: "English proficiency (1–5)", min: 1, max: 5 },
 
   { section: "Course information", id: "semester", type: "choice", label: "Which semester are you currently in?", options: ["1", "2", "3", "4", "5", "6", "7", "8"] },
-  { section: "Course information", id: "last_gpa", type: "number", label: "Last semester GPA (0–5)", min: 0, max: 5, step: 0.01, placeholder: "e.g. 4.00" },
-  { section: "Course information", id: "overall_gpa", type: "number", label: "Overall GPA until now (0–5)", min: 0, max: 5, step: 0.01, placeholder: "e.g. 3.72" },
+  { section: "Course information", id: "last_gpa", type: "number", label: "Average grade from last semester (all subjects, 2.0–5.0)", min: 2.0, max: 5.0, step: 0.01, placeholder: "e.g. 4.25" },
+  { section: "Course information", id: "overall_gpa", type: "number", label: "Overall average grade from all semesters (2.0–5.0)", min: 2.0, max: 5.0, step: 0.01, placeholder: "e.g. 4.10" },
 ];
 
 export default function Questionnaire() {
@@ -92,10 +92,10 @@ export default function Questionnaire() {
       const payload = {
         Gender: updatedAnswers.gender,
         Hometown: updatedAnswers.hometown,
-        Income: updatedAnswers.income,
+        Income: updatedAnswers.income, // Now Polish category string
 
-        SSC: Number(updatedAnswers.ssc),
-        HSC: Number(updatedAnswers.hsc),
+        SSC: Number(updatedAnswers.ssc), // Polish grade 1-6
+        HSC: Number(updatedAnswers.hsc), // Polish grade 1-6
 
         Computer: Number(updatedAnswers.computer),
         Preparation: updatedAnswers.preparation,
@@ -108,8 +108,8 @@ export default function Questionnaire() {
         // backend chce STRING (bo masz tam regex/parse)
         Semester: String(updatedAnswers.semester),
 
-        Last: Number(updatedAnswers.last_gpa),
-        Overall: Number(updatedAnswers.overall_gpa),
+        Last: Number(updatedAnswers.last_gpa), // Polish grade 2-5
+        Overall: Number(updatedAnswers.overall_gpa), // Polish grade 2-5
       };
 
       try {

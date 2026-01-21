@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ResultScreen from "./ResultScreen";
 
-const API_URL = "https://rp2-fw2v.onrender.com/api/evaluate";
+# deployment
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_URL = API_BASE ? `${API_BASE}/api/evaluate` : null;
 
 const QUESTIONS = [
   { section: "Personal information", id: "gender", type: "choice", label: "What is your gender?", options: ["Male", "Female", "Other"] },

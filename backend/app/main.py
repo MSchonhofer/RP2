@@ -22,7 +22,6 @@ app = FastAPI(title="ResearchProject2 API")
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-
     "https://stem-fit-rp.vercel.app",
     "https://rp-2-bcpucz7-mschonhofers-projects.vercel.app"
 ]

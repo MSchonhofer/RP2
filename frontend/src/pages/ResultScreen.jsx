@@ -7,6 +7,7 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
 } from "recharts";
+import FeedbackPrompt from "./FeedbackPrompt";
 
 /**
  * Accepts:
@@ -151,6 +152,10 @@ export default function ResultScreen({ result, onRestart, onHome }) {
           Back to home
         </button>
       </div>
+            <FeedbackPrompt
+        formUrl={import.meta.env.VITE_FEEDBACK_FORM_URL}
+        delayMs={15000}
+      />
     </div>
   );
 }

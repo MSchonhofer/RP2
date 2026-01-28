@@ -6,6 +6,8 @@ import ResearchInfo from './pages/ResearchInfo.jsx'
 import SelfDisciplineInfo from './pages/SelfDisciplineInfo.jsx'
 import StemPredictionInfo from './pages/StemPredictionInfo.jsx'
 import IncomePerformanceInfo from './pages/IncomePerformanceInfo.jsx'
+import DepartmentFitInfo from "./pages/DepartmentFitInfo";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
       <Route path="/self-discipline" element={<SelfDisciplineInfo />} />
       <Route path="/stem-prediction" element={<StemPredictionInfo />} />
       <Route path="/income-performance" element={<IncomePerformanceInfo />} />
+      <Route path="/department-fit" element={<DepartmentFitInfo />} />
     </Routes>
   )
 }

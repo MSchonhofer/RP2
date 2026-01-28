@@ -15,29 +15,21 @@ function Home() {
       <div className="bg-orbit bg-orbit-2" />
       <div className="bg-orbit bg-orbit-3" />
 
-      {/* karta na środku */}
       <main className="hero">
-        <div className="hero-badge">
-            Research-driven student profiling • STEM & habits
-        </div>
+        <div className="hero-badge">Student Success • Self-discipline, STEM & department match</div>
 
         <h1 className="hero-title">
-          <span className="highlight">STEM</span> or{" "}
-          <span className="highlight-alt">Non-STEM</span>?
+          <span className="highlight">STEM</span> or <span className="highlight-alt">Non-STEM</span>?
           <br />
           Let your habits decide.
         </h1>
 
-        {/* mikro-tagline (robi klimat) */}
-        <p className="hero-tagline">From raw habits to interpretable prediction.</p>
-
         <p className="hero-subtitle">
-          Answer a short questionnaire about your study habits, gaming, work and
-          background. Based on a research-driven model, we estimate your
-          self-discipline index and probability of a STEM-oriented academic path.
+          Answer a short questionnaire about your study habits, gaming, work and background.
+          Based on our research model, we estimate your self-discipline score, STEM fit,
+          and a best-matching department profile.
         </p>
 
-        {/* główne przyciski */}
         <div className="hero-actions">
           <button className="primary-btn" onClick={handleStart}>
             Start questionnaire
@@ -48,16 +40,18 @@ function Home() {
           </Link>
         </div>
 
-        {/* chipy z dodatkowymi sekcjami */}
         <div className="hero-meta">
           <Link to="/self-discipline" className="meta-chip">
-            ① Data Processing
+            Data processing
           </Link>
           <Link to="/stem-prediction" className="meta-chip">
-            ② Prediction Model
+            STEM model
+          </Link>
+          <Link to="/department-fit" className="meta-chip">
+            Department match
           </Link>
           <Link to="/income-performance" className="meta-chip">
-            ③ Interpretation
+            Interpretation
           </Link>
         </div>
       </main>

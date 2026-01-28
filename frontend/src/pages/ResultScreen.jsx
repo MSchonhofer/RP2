@@ -9,16 +9,10 @@ import {
 } from "recharts";
 import FeedbackPrompt from "./FeedbackPrompt";
 
-/**
- * Accepts:
- * 1) components as ARRAY: [{ name: "Self-discipline", value: 0.64 }, ...]
- * 2) components as OBJECT: { "Self-discipline": 0.64, "Academic": 0.71, ... }
- */
 function BreakdownChart({ components }) {
   const chartData = useMemo(() => {
     if (!components) return [];
 
-    // Case 1: array of {name, value}
     if (Array.isArray(components)) {
       return components
         .map((c) => ({
@@ -28,7 +22,6 @@ function BreakdownChart({ components }) {
         .filter((d) => d.name && Number.isFinite(d.value));
     }
 
-    // Case 2: object map {name: value}
     if (typeof components === "object") {
       return Object.entries(components)
         .map(([k, v]) => ({
@@ -50,10 +43,7 @@ function BreakdownChart({ components }) {
 
       <div className="chart-wrapper">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart
-            data={chartData}
-            margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-          >
+          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <XAxis
               dataKey="name"
               stroke="#9ca3af"
@@ -62,29 +52,29 @@ function BreakdownChart({ components }) {
               tickLine={{ stroke: "#4b5563" }}
             />
             <YAxis
-  stroke="#9ca3af"
-  tick={{ fontSize: 11 }}
-  axisLine={{ stroke: "#4b5563" }}
-  tickLine={{ stroke: "#4b5563" }}
-  domain={[0, 100]}
-  tickFormatter={(v) => `${Math.round(v)}%`}
-/>
+              stroke="#9ca3af"
+              tick={{ fontSize: 11 }}
+              axisLine={{ stroke: "#4b5563" }}
+              tickLine={{ stroke: "#4b5563" }}
+              domain={[0, 100]}
+              tickFormatter={(v) => `${Math.round(v)}%`}
+            />
 
-<RechartsTooltip
-  contentStyle={{
-    background: "#020617",
-    border: "1px solid rgba(148,163,184,0.8)",
-    borderRadius: 10,
-    fontSize: 12,
-    color: "#e5e7eb",
-  }}
-  labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
-  formatter={(value) => {
-    const num = Number(value);
-    if (!Number.isFinite(num)) return ["—", "Score"];
-    return [`${Math.round(num)}%`, "Score"];
-  }}
-/>
+            <RechartsTooltip
+              contentStyle={{
+                background: "#020617",
+                border: "1px solid rgba(148,163,184,0.8)",
+                borderRadius: 10,
+                fontSize: 12,
+                color: "#e5e7eb",
+              }}
+              labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
+              formatter={(value) => {
+                const num = Number(value);
+                if (!Number.isFinite(num)) return ["—", "Score"];
+                return [`${Math.round(num)}%`, "Score"];
+              }}
+            />
 
             <Bar dataKey="value" fill="#a855f7" radius={[8, 8, 0, 0]} />
           </BarChart>
@@ -105,9 +95,32 @@ export default function ResultScreen({ result, onRestart, onHome }) {
 
   const stemBadge = result.stem_fit_probability >= 0.5 ? "STEM" : "NON-STEM";
 
+  const deptScore = Number(result?.department_fit_score);
+  const hasDeptScore = Number.isFinite(deptScore);
+
   return (
     <div className="question-card">
       <h2 className="questionnaire-title">Your result</h2>
+
+      {/* DEPARTMENT FIT */}
+      {result.department_fit && (
+        <div className="dept-highlight">
+          <div className="dept-pill">BEST MATCH</div>
+
+          <div className="dept-text">
+            <div className="dept-title">{result.department_fit}</div>
+            <div className="dept-sub">
+              Based on similarity to typical profiles in the dataset
+              {hasDeptScore ? (
+                <>
+                  {" "}
+                  • match strength: <b>{Math.round(deptScore * 100)}%</b>
+                </>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SCORE */}
       <div className="score-bar-wrapper">
@@ -121,7 +134,9 @@ export default function ResultScreen({ result, onRestart, onHome }) {
         <div className="score-bar-track">
           <div
             className="score-bar-fill"
-            style={{ width: `${Math.max(0, Math.min(1, result.self_discipline_score)) * 100}%` }}
+            style={{
+              width: `${Math.max(0, Math.min(1, result.self_discipline_score)) * 100}%`,
+            }}
           />
         </div>
       </div>
@@ -133,9 +148,7 @@ export default function ResultScreen({ result, onRestart, onHome }) {
         <span className="stem-desc">
           STEM fit:{" "}
           <strong>
-            <span className="stem-percent">
-              {Math.round(result.stem_fit_probability * 100)}%
-            </span>{" "}
+            <span className="stem-percent">{Math.round(result.stem_fit_probability * 100)}%</span>{" "}
             – {result.stem_fit_label}
           </strong>
         </span>
@@ -152,10 +165,8 @@ export default function ResultScreen({ result, onRestart, onHome }) {
           Back to home
         </button>
       </div>
-            <FeedbackPrompt
-        formUrl={import.meta.env.VITE_FEEDBACK_FORM_URL}
-        delayMs={15000}
-      />
+
+      <FeedbackPrompt formUrl={import.meta.env.VITE_FEEDBACK_FORM_URL} delayMs={15000} />
     </div>
   );
 }
